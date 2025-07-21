@@ -1,0 +1,35 @@
+# mysql-service.yaml
+# Headless service cho StatefulSet
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-headless
+  namespace: datahub
+  labels:
+    app: mysql
+spec:
+  clusterIP: None  # Headless service
+  selector:
+    app: mysql
+  ports:
+  - port: 3306
+    targetPort: 3306
+    name: mysql
+---
+# Regular service cho các app khác connect
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: datahub
+  labels:
+    app: mysql
+spec:
+  selector:
+    app: mysql
+  ports:
+  - port: 3306
+    targetPort: 3306
+    name: mysql
+  type: ClusterIP
+---

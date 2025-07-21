@@ -1,0 +1,18 @@
+# datahub-frontend-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: datahub-frontend
+  namespace: datahub
+  labels:
+    app: datahub-frontend
+spec:
+  selector:
+    app: datahub-frontend
+  ports:
+  - port: 9002
+    targetPort: 9002
+    name: http
+    nodePort: 30002
+  type: NodePort
+---

@@ -1,0 +1,20 @@
+# elasticsearch-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch
+  namespace: datahub
+  labels:
+    app: elasticsearch
+spec:
+  selector:
+    app: elasticsearch
+  ports:
+  - port: 9200
+    targetPort: 9200
+    name: http
+  - port: 9300
+    targetPort: 9300
+    name: transport
+  type: ClusterIP
+---

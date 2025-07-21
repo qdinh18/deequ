@@ -1,0 +1,77 @@
+# Global settings
+global:
+  namespace: datahub
+  labels: {}
+
+# Component-specific configurations
+mysql:
+  replicaCount: 1
+  image: mysql:8.0
+  storageClass: standard
+  storageSize: 10Gi
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+
+elasticsearch:
+  replicaCount: 1
+  image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
+  storageSize: 20Gi
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "1"
+
+kafka:
+  replicaCount: 1
+  image: confluentinc/cp-kafka:7.0.0
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+
+zookeeper:
+  replicaCount: 1
+  image: confluentinc/cp-zookeeper:7.0.0
+
+datahub:
+  gms:
+    replicaCount: 1
+    image: linkedin/datahub-gms:v0.8.45
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "2Gi"
+        cpu: "1"
+  frontend:
+    replicaCount: 2
+    image: linkedin/datahub-frontend-react:v0.8.45
+    service:
+      type: NodePort
+      port: 9002
+      nodePort: 30002
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "500m"
+
+# Secrets should be managed outside of the default values.
+# They can be provided during installation using --set or a separate values file.
+secrets:
+  mysql:
+    username: "datahub"
+    password: "datahub123" # CHANGE THIS IN PRODUCTION
+    database: "datahub"
+    rootPassword: "strong-password" # CHANGE THIS IN PRODUCTION

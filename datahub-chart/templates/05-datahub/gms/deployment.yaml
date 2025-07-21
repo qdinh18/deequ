@@ -1,0 +1,58 @@
+# datahub-gms-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: datahub-gms
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: datahub-gms
+    component: backend
+spec:
+  replicas: {{ .Values.datahub.gms.replicaCount }}
+  selector:
+    matchLabels:
+      app: datahub-gms
+  template:
+    metadata:
+      labels:
+        app: datahub-gms
+        component: backend
+    spec:
+      containers:
+      - name: datahub-gms
+        image: "{{ .Values.datahub.gms.image }}"
+        ports:
+        - containerPort: 8080
+        env:
+        - name: EBEAN_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: datahub-secrets
+              key: mysql-username
+        - name: EBEAN_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: datahub-secrets
+              key: mysql-password
+        - name: EBEAN_DATASOURCE_URL
+          value: "jdbc:mysql://mysql:3306/{{ .Values.secrets.mysql.database }}"
+        - name: ELASTICSEARCH_HOST
+          value: "elasticsearch"
+        - name: ELASTICSEARCH_PORT
+          value: "9200"
+        - name: KAFKA_BOOTSTRAP_SERVER
+          value: "kafka:9092"
+        resources:
+{{ toYaml .Values.datahub.gms.resources | indent 10 }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10

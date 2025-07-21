@@ -1,0 +1,92 @@
+# mysql-statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: mysql
+    component: database
+spec:
+  serviceName: mysql-headless
+  replicas: {{ .Values.mysql.replicaCount }}
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+        component: database
+    spec:
+      containers:
+      - name: mysql
+        image: "{{ .Values.mysql.image }}"
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: datahub-secrets
+              key: mysql-root-password
+        - name: MYSQL_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: datahub-secrets
+              key: mysql-database
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: datahub-secrets
+              key: mysql-username
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: datahub-secrets
+              key: mysql-password
+        volumeMounts:
+        - name: mysql-storage
+          mountPath: /var/lib/mysql
+        - name: mysql-config
+          mountPath: /etc/mysql/conf.d
+        resources:
+{{ toYaml .Values.mysql.resources | indent 10 }}
+        livenessProbe:
+          exec:
+            command:
+            - mysqladmin
+            - ping
+            - -h
+            - localhost
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - mysql
+            - -h
+            - localhost
+            - -u
+            - root
+            - -p$MYSQL_ROOT_PASSWORD
+            - -e
+            - SELECT 1
+          initialDelaySeconds: 5
+          periodSeconds: 2
+      volumes:
+      - name: mysql-config
+        configMap:
+          name: datahub-config
+          items:
+          - key: mysql.conf
+            path: mysql.conf
+  volumeClaimTemplates:
+  - metadata:
+      name: mysql-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: {{ .Values.mysql.storageClass }}
+      resources:
+        requests:
+          storage: {{ .Values.mysql.storageSize }}

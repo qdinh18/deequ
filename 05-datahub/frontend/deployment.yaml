@@ -1,0 +1,52 @@
+# datahub-frontend-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: datahub-frontend
+  namespace: datahub
+  labels:
+    app: datahub-frontend
+    component: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: datahub-frontend
+  template:
+    metadata:
+      labels:
+        app: datahub-frontend
+        component: frontend
+    spec:
+      containers:
+      - name: datahub-frontend
+        image: linkedin/datahub-frontend-react:v0.8.45
+        ports:
+        - containerPort: 9002
+        env:
+        - name: DATAHUB_GMS_HOST
+          value: "datahub-gms"
+        - name: DATAHUB_GMS_PORT
+          value: "8080"
+        - name: DATAHUB_SECRET
+          value: "YouNeedToChangeThisSecretKey"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 9002
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 9002
+          initialDelaySeconds: 30
+          periodSeconds: 10
+---

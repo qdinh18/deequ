@@ -1,0 +1,27 @@
+# elasticsearch-storage.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: elasticsearch-pv
+  namespace: datahub
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /tmp/datahub/elasticsearch
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: elasticsearch-pvc
+  namespace: datahub
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---

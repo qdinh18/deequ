@@ -1,0 +1,46 @@
+# datahub-frontend-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: datahub-frontend
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: datahub-frontend
+    component: frontend
+spec:
+  replicas: {{ .Values.datahub.frontend.replicaCount }}
+  selector:
+    matchLabels:
+      app: datahub-frontend
+  template:
+    metadata:
+      labels:
+        app: datahub-frontend
+        component: frontend
+    spec:
+      containers:
+      - name: datahub-frontend
+        image: "{{ .Values.datahub.frontend.image }}"
+        ports:
+        - containerPort: {{ .Values.datahub.frontend.service.port }}
+        env:
+        - name: DATAHUB_GMS_HOST
+          value: "datahub-gms"
+        - name: DATAHUB_GMS_PORT
+          value: "8080"
+        - name: DATAHUB_SECRET
+          value: "YouNeedToChangeThisSecretKey"
+        resources:
+{{ toYaml .Values.datahub.frontend.resources | indent 10 }}
+        livenessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.datahub.frontend.service.port }}
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.datahub.frontend.service.port }}
+          initialDelaySeconds: 30
+          periodSeconds: 10

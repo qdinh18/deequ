@@ -1,0 +1,8 @@
+# datahub-namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: datahub
+  labels:
+    name: datahub
+---
